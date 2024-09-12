@@ -1,0 +1,9 @@
+.vcxproj
+.vscode
+*.exe
+*.i
+*.ii
+*.gpu
+*.ptx
+*.cubin
+*.fatbin
