@@ -5,7 +5,6 @@
 #include <cstring>
 #include <time.h>
 #include <stdlib.h>
-#include <sys/utime.h>
 #include <fstream> 
 
 #define HANDLE_NULL( a ){if (a == NULL) { \
