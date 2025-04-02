@@ -22,4 +22,4 @@ __global__ void scan_summation(int * input, int * auxiliry_array, int input_size
 
 #endif // !CUDA_COMMON_H
 
-//void query_device();
+void query_device();

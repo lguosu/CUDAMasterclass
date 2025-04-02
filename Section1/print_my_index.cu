@@ -12,10 +12,10 @@ __global__ void print_my_index()
 }
 
 
-//int main()
-//{
-//	printf("hello from main \n");
-//	print_my_index << <2, 10 >> > ();
-//	cudaDeviceSynchronize();
-//	return 0;
-//}
+int main()
+{
+	printf("hello from main \n");
+	print_my_index << <2, 10 >> > ();
+	cudaDeviceSynchronize();
+	return 0;
+}
