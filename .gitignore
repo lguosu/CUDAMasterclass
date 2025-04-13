@@ -1,6 +1,7 @@
 .vcxproj
 .vscode
 *.exe
+*.o
 *.i
 *.ii
 *.gpu

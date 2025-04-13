@@ -381,246 +381,246 @@ __global__ void reduction_kernel_complete_template8_1(int * input,
 	}
 }
 
-//int main(int argc, char ** argv)
-//{
-//	printf("Performance comparison of reduction for 128Mb data aray \n");
-//
-//	int size = 1 << 25;
-//	int byte_size = size * sizeof(int);
-//	int block_size = 1024;
-//
-//	clock_t cpu_start, cpu_end, gpu_start, gpu_end;
-//
-//	int * h_input, *h_ref;
-//	h_input = (int*)malloc(byte_size);
-//
-//	initialize(h_input, size);
-//
-//	cpu_start = clock();
-//	int cpu_result = reduction_cpu(h_input, size);
-//	cpu_end = clock();
-//
-//	dim3 block(block_size);
-//	dim3 grid((size / block_size));
-//
-//	//printf("Kernel launch parameters || grid : %d, block : %d \n", grid.x, block.x);
-//	printf("CPU execution time : %4.6f \n",
-//		(double)((double)(cpu_end - cpu_start) / CLOCKS_PER_SEC));
-//
-//	int temp_array_byte_size = sizeof(int)* grid.x;
-//
-//	h_ref = (int*)malloc(temp_array_byte_size);
-//
-//	int * d_input, *d_temp;
-//	gpuErrchk(cudaMalloc((void**)&d_input, byte_size));
-//	gpuErrchk(cudaMalloc((void**)&d_temp, temp_array_byte_size));
-//
-//	int gpu_result = 0;
-//	dim3 new_grid2(grid.x / 2);
-//	dim3 new_grid8(grid.x / 8);
-//
-//	// 0 warm up kernel
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
-//		cudaMemcpyHostToDevice));
-//
-//	warmup_kernel << <grid, block >> > (d_input, d_temp, size);
-//	gpuErrchk(cudaDeviceSynchronize());
-//
-//
-//	// 1 naive reduction implementation : neighbored pairs approach
-//	printf("1. Naive neighbored pairs approach \n");
-//	gpu_start = clock();
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
-//		cudaMemcpyHostToDevice));
-//
-//	redunction_neighbored_pairs_1 << <grid, block >> > (d_input, d_temp, size);
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//
-//	gpu_end = clock();
-//	//compare_results(gpu_result, cpu_result);
-//	print_time_using_host_clock(gpu_start, gpu_end);
-//	printf("\n");
-//
-//	// 2. improved neighbored pairs approach
-//	printf("2. Improved neighbored pairs approach \n");
-//	gpu_start = clock();
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
-//		cudaMemcpyHostToDevice));
-//
-//	reduction_neighbored_pairs_improved_1 << <grid, block >> > (d_input, d_temp, size);
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//	gpu_result = 0;
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//
-//	gpu_end = clock();
-//	//compare_results(gpu_result, cpu_result);
-//	print_time_using_host_clock(gpu_start, gpu_end);
-//	printf("\n");
-//
-//	// 3. interleaved pairs approach
-//	printf("3. Interleaved pairs approach \n");
-//
-//	gpu_start = clock();
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
-//		cudaMemcpyHostToDevice));
-//
-//	reduction_interleaved_pairs_1 << <grid, block >> > (d_input, d_temp, size);
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//	gpu_result = 0;
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//
-//	gpu_end = clock();
-//	//compare_results(gpu_result, cpu_result);
-//	print_time_using_host_clock(gpu_start, gpu_end);
-//	printf("\n");
-//
-//	// 4. 2 data blocks unrolled to one
-//	printf("4. Data blocks unrolled 2 \n");
-//
-//	gpu_start = clock();
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
-//		cudaMemcpyHostToDevice));
-//
-//	reduction_interleaved_unrolling_blocks2_1 << <new_grid2, block >> > (d_input, d_temp, size);
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//	gpu_result = 0;
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//
-//	gpu_end = clock();
-//	//compare_results(gpu_result, cpu_result);
-//	print_time_using_host_clock(gpu_start, gpu_end);
-//	printf("\n");
-//	
-//	// 5. 8 data blocks unrolled to one
-//	printf("5. Data blocks unrolled 8 \n");
-//
-//	gpu_start = clock();
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
-//		cudaMemcpyHostToDevice));
-//
-//	reduction_interleaved_unrolling_blocks8_1 << <new_grid8, block >> > (d_input, d_temp, size);
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//	gpu_result = 0;
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//
-//	gpu_end = clock();
-//	//compare_results(gpu_result, cpu_result);
-//	print_time_using_host_clock(gpu_start, gpu_end);
-//	printf("\n");
-//
-//	// 6. warp unrolling for 8 blocks unrolloed 
-//	printf("6. warp unrolling and 8 data block unrolling \n");
-//
-//	gpu_start = clock();
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
-//		cudaMemcpyHostToDevice));
-//
-//	reduction_kernel_interleaved_warp_unrolling8_1<< <new_grid8, block >> > (d_input, d_temp, size);
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//	gpu_result = 0;
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//
-//	gpu_end = clock();
-//	//compare_results(gpu_result, cpu_result);
-//	print_time_using_host_clock(gpu_start, gpu_end);
-//	printf("\n");
-//
-//	// 7. complete unrolling
-//	printf("7. complete unrolling \n");
-//	gpu_start = clock();
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
-//		cudaMemcpyHostToDevice));
-//
-//	reduction_kernel_complete_unrolling8_1 << <new_grid8, block >> > (d_input, d_temp, size);
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//	gpu_result = 0;
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//	gpu_end = clock();
-//
-//	//compare_results(gpu_result, cpu_result);
-//	print_time_using_host_clock(gpu_start, gpu_end);
-//	printf("\n");
-//
-//	// 8. complete unrolling with templated functions 
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
-//		cudaMemcpyHostToDevice));
-//
-//	switch (block_size)
-//	{
-//	case 1024:
-//		reduction_kernel_complete_template8_1 <1024> << < new_grid8, block >> > (d_input, d_temp, size);
-//		break;
-//	case 512:
-//		reduction_kernel_complete_template8_1 <512> << < new_grid8, block >> > (d_input, d_temp, size);
-//		break;
-//	case 256:
-//		reduction_kernel_complete_template8_1 <256> << < new_grid8, block >> > (d_input, d_temp, size);
-//		break;
-//	case 128:
-//		reduction_kernel_complete_template8_1 <128> << < new_grid8, block >> > (d_input, d_temp, size);
-//		break;
-//	}
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//	gpu_result = 0;
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//	//compare_results(gpu_result, cpu_result);
-//
-//	gpuErrchk(cudaFree(d_input));
-//	gpuErrchk(cudaFree(d_temp));
-//	free(h_input);
-//	free(h_ref);
-//
-//	gpuErrchk(cudaDeviceReset());
-//	return 0;
-//} 
+int main(int argc, char ** argv)
+{
+	printf("Performance comparison of reduction for 128Mb data aray \n");
+
+	int size = 1 << 25;
+	int byte_size = size * sizeof(int);
+	int block_size = 1024;
+
+	clock_t cpu_start, cpu_end, gpu_start, gpu_end;
+
+	int * h_input, *h_ref;
+	h_input = (int*)malloc(byte_size);
+
+	initialize(h_input, size);
+
+	cpu_start = clock();
+	int cpu_result = reduction_cpu(h_input, size);
+	cpu_end = clock();
+
+	dim3 block(block_size);
+	dim3 grid((size / block_size));
+
+	//printf("Kernel launch parameters || grid : %d, block : %d \n", grid.x, block.x);
+	printf("CPU execution time : %4.6f \n",
+		(double)((double)(cpu_end - cpu_start) / CLOCKS_PER_SEC));
+
+	int temp_array_byte_size = sizeof(int)* grid.x;
+
+	h_ref = (int*)malloc(temp_array_byte_size);
+
+	int * d_input, *d_temp;
+	gpuErrchk(cudaMalloc((void**)&d_input, byte_size));
+	gpuErrchk(cudaMalloc((void**)&d_temp, temp_array_byte_size));
+
+	int gpu_result = 0;
+	dim3 new_grid2(grid.x / 2);
+	dim3 new_grid8(grid.x / 8);
+
+	// 0 warm up kernel
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
+		cudaMemcpyHostToDevice));
+
+	warmup_kernel << <grid, block >> > (d_input, d_temp, size);
+	gpuErrchk(cudaDeviceSynchronize());
+
+
+	// 1 naive reduction implementation : neighbored pairs approach
+	printf("1. Naive neighbored pairs approach \n");
+	gpu_start = clock();
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
+		cudaMemcpyHostToDevice));
+
+	redunction_neighbored_pairs_1 << <grid, block >> > (d_input, d_temp, size);
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+
+	gpu_end = clock();
+	//compare_results(gpu_result, cpu_result);
+	print_time_using_host_clock(gpu_start, gpu_end);
+	printf("\n");
+
+	// 2. improved neighbored pairs approach
+	printf("2. Improved neighbored pairs approach \n");
+	gpu_start = clock();
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
+		cudaMemcpyHostToDevice));
+
+	reduction_neighbored_pairs_improved_1 << <grid, block >> > (d_input, d_temp, size);
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+	gpu_result = 0;
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+
+	gpu_end = clock();
+	//compare_results(gpu_result, cpu_result);
+	print_time_using_host_clock(gpu_start, gpu_end);
+	printf("\n");
+
+	// 3. interleaved pairs approach
+	printf("3. Interleaved pairs approach \n");
+
+	gpu_start = clock();
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
+		cudaMemcpyHostToDevice));
+
+	reduction_interleaved_pairs_1 << <grid, block >> > (d_input, d_temp, size);
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+	gpu_result = 0;
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+
+	gpu_end = clock();
+	//compare_results(gpu_result, cpu_result);
+	print_time_using_host_clock(gpu_start, gpu_end);
+	printf("\n");
+
+	// 4. 2 data blocks unrolled to one
+	printf("4. Data blocks unrolled 2 \n");
+
+	gpu_start = clock();
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
+		cudaMemcpyHostToDevice));
+
+	reduction_interleaved_unrolling_blocks2_1 << <new_grid2, block >> > (d_input, d_temp, size);
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+	gpu_result = 0;
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+
+	gpu_end = clock();
+	//compare_results(gpu_result, cpu_result);
+	print_time_using_host_clock(gpu_start, gpu_end);
+	printf("\n");
+	
+	// 5. 8 data blocks unrolled to one
+	printf("5. Data blocks unrolled 8 \n");
+
+	gpu_start = clock();
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
+		cudaMemcpyHostToDevice));
+
+	reduction_interleaved_unrolling_blocks8_1 << <new_grid8, block >> > (d_input, d_temp, size);
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+	gpu_result = 0;
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+
+	gpu_end = clock();
+	//compare_results(gpu_result, cpu_result);
+	print_time_using_host_clock(gpu_start, gpu_end);
+	printf("\n");
+
+	// 6. warp unrolling for 8 blocks unrolloed 
+	printf("6. warp unrolling and 8 data block unrolling \n");
+
+	gpu_start = clock();
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
+		cudaMemcpyHostToDevice));
+
+	reduction_kernel_interleaved_warp_unrolling8_1<< <new_grid8, block >> > (d_input, d_temp, size);
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+	gpu_result = 0;
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+
+	gpu_end = clock();
+	//compare_results(gpu_result, cpu_result);
+	print_time_using_host_clock(gpu_start, gpu_end);
+	printf("\n");
+
+	// 7. complete unrolling
+	printf("7. complete unrolling \n");
+	gpu_start = clock();
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
+		cudaMemcpyHostToDevice));
+
+	reduction_kernel_complete_unrolling8_1 << <new_grid8, block >> > (d_input, d_temp, size);
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+	gpu_result = 0;
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+	gpu_end = clock();
+
+	//compare_results(gpu_result, cpu_result);
+	print_time_using_host_clock(gpu_start, gpu_end);
+	printf("\n");
+
+	// 8. complete unrolling with templated functions 
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,
+		cudaMemcpyHostToDevice));
+
+	switch (block_size)
+	{
+	case 1024:
+		reduction_kernel_complete_template8_1 <1024> << < new_grid8, block >> > (d_input, d_temp, size);
+		break;
+	case 512:
+		reduction_kernel_complete_template8_1 <512> << < new_grid8, block >> > (d_input, d_temp, size);
+		break;
+	case 256:
+		reduction_kernel_complete_template8_1 <256> << < new_grid8, block >> > (d_input, d_temp, size);
+		break;
+	case 128:
+		reduction_kernel_complete_template8_1 <128> << < new_grid8, block >> > (d_input, d_temp, size);
+		break;
+	}
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+	gpu_result = 0;
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+	//compare_results(gpu_result, cpu_result);
+
+	gpuErrchk(cudaFree(d_input));
+	gpuErrchk(cudaFree(d_temp));
+	free(h_input);
+	free(h_ref);
+
+	gpuErrchk(cudaDeviceReset());
+	return 0;
+} 

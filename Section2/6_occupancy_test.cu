@@ -20,18 +20,18 @@ __global__ void occupancy_test(int * results)
 	results[gid] = x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 ;
 }
 
-//int main()
-//{
-//	int size = 1 << 16;
-//	int byte_size = sizeof(int)*size;
-//
-//	int * d_results;
-//	cudaMalloc((void**)&d_results, byte_size);
-//	cudaMemset(d_results, 0, byte_size);
-//
-//	dim3 blocks(128);
-//	dim3 grid((size+blocks.x-1)/blocks.x);
-//	occupancy_test << <grid,blocks >> > (d_results);
-//	cudaDeviceSynchronize();
-//	return 0;
-//}
+int main()
+{
+	int size = 1 << 16;
+	int byte_size = sizeof(int)*size;
+
+	int * d_results;
+	cudaMalloc((void**)&d_results, byte_size);
+	cudaMemset(d_results, 0, byte_size);
+
+	dim3 blocks(128);
+	dim3 grid((size+blocks.x-1)/blocks.x);
+	occupancy_test << <grid,blocks >> > (d_results);
+	cudaDeviceSynchronize();
+	return 0;
+}

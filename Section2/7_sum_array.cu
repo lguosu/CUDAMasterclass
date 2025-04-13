@@ -185,31 +185,31 @@ void run_sum_array_2d(int argc, char** argv)
 	free(h_a);
 }
 
-////arguments :
-////1 - kernel (0:1D or 1:2D), 
-////2 - input size (2 pow (x))
-////3 - for 2D kernel nx, 
-////4 - block.x 
-////5 - block.y  
-//int main(int argc, char** argv)
-//{
-//	printf("\n----------------------- SUM ARRAY EXAMPLE FOR NVPROF ------------------------ \n\n");
-//	if (argc > 1)
-//	{
-//		if (atoi(argv[1]) > 0)
-//		{
-//			run_sum_array_2d(argc, argv);
-//		}
-//		else
-//		{
-//			run_sum_array_1d(argc, argv);
-//		}
-//	}
-//	else
-//	{
-//		run_sum_array_1d(argc, argv);
-//	}
-//
-//	//query_device();
-//	return 0;
-//}
+//arguments :
+//1 - kernel (0:1D or 1:2D), 
+//2 - input size (2 pow (x))
+//3 - for 2D kernel nx, 
+//4 - block.x 
+//5 - block.y  
+int main(int argc, char** argv)
+{
+	printf("\n----------------------- SUM ARRAY EXAMPLE FOR NVPROF ------------------------ \n\n");
+	if (argc > 1)
+	{
+		if (atoi(argv[1]) > 0)
+		{
+			run_sum_array_2d(argc, argv);
+		}
+		else
+		{
+			run_sum_array_1d(argc, argv);
+		}
+	}
+	else
+	{
+		run_sum_array_1d(argc, argv);
+	}
+
+	//query_device();
+	return 0;
+}

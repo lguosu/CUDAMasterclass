@@ -3,14 +3,14 @@
 
 #include <stdio.h>
 
-//int main()
-//{
-//	int iDev = 0;
-//	cudaDeviceProp iProp;
-//
-//	cudaGetDeviceProperties(&iProp, iDev);
-//	printf("Max threads per SM : %d \n",
-//		iProp.maxThreadsPerMultiProcessor);
-//
-//	return 0;
-//}
+int main()
+{
+	int iDev = 0;
+	cudaDeviceProp iProp;
+
+	cudaGetDeviceProperties(&iProp, iDev);
+	printf("Max threads per SM : %d \n",
+		iProp.maxThreadsPerMultiProcessor);
+
+	return 0;
+}
