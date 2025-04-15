@@ -446,7 +446,7 @@ int main(int argc, char ** argv)
 	}
 
 	gpu_end = clock();
-	//compare_results(gpu_result, cpu_result);
+	compare_results(gpu_result, cpu_result);
 	print_time_using_host_clock(gpu_start, gpu_end);
 	printf("\n");
 
@@ -468,7 +468,7 @@ int main(int argc, char ** argv)
 	}
 
 	gpu_end = clock();
-	//compare_results(gpu_result, cpu_result);
+	compare_results(gpu_result, cpu_result);
 	print_time_using_host_clock(gpu_start, gpu_end);
 	printf("\n");
 
@@ -491,7 +491,7 @@ int main(int argc, char ** argv)
 	}
 
 	gpu_end = clock();
-	//compare_results(gpu_result, cpu_result);
+	compare_results(gpu_result, cpu_result);
 	print_time_using_host_clock(gpu_start, gpu_end);
 	printf("\n");
 
@@ -514,7 +514,7 @@ int main(int argc, char ** argv)
 	}
 
 	gpu_end = clock();
-	//compare_results(gpu_result, cpu_result);
+	compare_results(gpu_result, cpu_result);
 	print_time_using_host_clock(gpu_start, gpu_end);
 	printf("\n");
 	
@@ -537,7 +537,7 @@ int main(int argc, char ** argv)
 	}
 
 	gpu_end = clock();
-	//compare_results(gpu_result, cpu_result);
+	compare_results(gpu_result, cpu_result);
 	print_time_using_host_clock(gpu_start, gpu_end);
 	printf("\n");
 
@@ -560,7 +560,7 @@ int main(int argc, char ** argv)
 	}
 
 	gpu_end = clock();
-	//compare_results(gpu_result, cpu_result);
+	compare_results(gpu_result, cpu_result);
 	print_time_using_host_clock(gpu_start, gpu_end);
 	printf("\n");
 
@@ -582,7 +582,7 @@ int main(int argc, char ** argv)
 	}
 	gpu_end = clock();
 
-	//compare_results(gpu_result, cpu_result);
+	compare_results(gpu_result, cpu_result);
 	print_time_using_host_clock(gpu_start, gpu_end);
 	printf("\n");
 
@@ -614,7 +614,7 @@ int main(int argc, char ** argv)
 	{
 		gpu_result += h_ref[i];
 	}
-	//compare_results(gpu_result, cpu_result);
+	compare_results(gpu_result, cpu_result);
 
 	gpuErrchk(cudaFree(d_input));
 	gpuErrchk(cudaFree(d_temp));

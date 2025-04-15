@@ -13,8 +13,8 @@ __global__ void print_details_of_warps()
 
 	int gbid = blockIdx.y * gridDim.x + blockIdx.x;
 
-	printf("tid : %d, bid.x : %d, bid.y : %d, gid : %d, warp_id : %d, gbid : %d \n",
-		threadIdx.x, blockIdx.x, blockIdx.y, gid, warp_id, gbid);
+	printf("gid : %03d, gbid : %d, bid.x : %d, bid.y : %d, warp_id : %d, tid : %02d \n",
+		gid, gbid, blockIdx.x, blockIdx.y, warp_id, threadIdx.x);
 }
 
 int main(int argc , char** argv)

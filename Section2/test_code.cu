@@ -88,3 +88,5 @@ __global__ void gpuRecursiveReduce_2(int *g_idata, int *g_odata, int iStride,
 			iStride / 2, iDim);
 	}
 }
+
+int main() {}
