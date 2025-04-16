@@ -128,23 +128,23 @@ void testSOA()
 	cudaDeviceReset();
 }
 
-//int main(int argc, char** argv)
-//{
-//	int kernel_ind = 0;
-//
-//	if (argc > 1)
-//	{
-//		kernel_ind = atoi(argv[1]);
-//	}
-//
-//	if (kernel_ind == 0)
-//	{
-//		testAOS();
-//	}
-//	else
-//	{
-//		testSOA();
-//	}
-//
-//	return EXIT_SUCCESS;
-//}
+int main(int argc, char** argv)
+{
+	int kernel_ind = 0;
+
+	if (argc > 1)
+	{
+		kernel_ind = atoi(argv[1]);
+	}
+
+	if (kernel_ind == 0)
+	{
+		testAOS();
+	}
+	else
+	{
+		testSOA();
+	}
+
+	return EXIT_SUCCESS;
+}
