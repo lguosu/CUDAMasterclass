@@ -156,46 +156,46 @@ __global__ void constant_stencil_smem_test(int * in, int * out, int size)
 	}
 }
 
-//int main(int argc, char ** argv)
-//{
-//	int size = 1 << 22;
-//	int byte_size = sizeof(int) * size;
-//	int block_size = BDIM;
-//
-//	int * h_in, *h_out, *h_ref;
-//
-//	h_in = (int*)malloc(byte_size);
-//	h_out = (int*)malloc(byte_size);
-//	h_ref = (int*)malloc(byte_size);
-//
-//	initialize(h_in, size, INIT_ONE);
-//
-//	int * d_in, *d_out;
-//	cudaMalloc((void**)&d_in, byte_size);
-//	cudaMalloc((void**)&d_out, byte_size);
-//
-//	cudaMemcpy(d_in, h_in, byte_size, cudaMemcpyHostToDevice);
-//	cudaMemset(d_out, 0, byte_size);
-//
-//	setup_coef_1();
-//
-//	dim3 blocks(block_size);
-//	dim3 grid(size / blocks.x);
-//
-//	constant_stencil_smem_test << < grid, blocks >> > (d_in, d_out, size);
-//	cudaDeviceSynchronize();
-//
-//	cudaMemcpy(h_ref, d_out, byte_size, cudaMemcpyDeviceToHost);
-//
-//	host_const_calculation(h_in, h_out, size);
-//
-//	compare_arrays(h_ref, h_out, size);
-//
-//	cudaFree(d_out);
-//	cudaFree(d_in);
-//	free(h_ref);
-//	free(h_out);
-//	free(h_in);
-//
-//	return 0;
-//}
+int main(int argc, char ** argv)
+{
+	int size = 1 << 22;
+	int byte_size = sizeof(int) * size;
+	int block_size = BDIM;
+
+	int * h_in, *h_out, *h_ref;
+
+	h_in = (int*)malloc(byte_size);
+	h_out = (int*)malloc(byte_size);
+	h_ref = (int*)malloc(byte_size);
+
+	initialize(h_in, size, INIT_ONE);
+
+	int * d_in, *d_out;
+	cudaMalloc((void**)&d_in, byte_size);
+	cudaMalloc((void**)&d_out, byte_size);
+
+	cudaMemcpy(d_in, h_in, byte_size, cudaMemcpyHostToDevice);
+	cudaMemset(d_out, 0, byte_size);
+
+	setup_coef_1();
+
+	dim3 blocks(block_size);
+	dim3 grid(size / blocks.x);
+
+	constant_stencil_smem_test << < grid, blocks >> > (d_in, d_out, size);
+	cudaDeviceSynchronize();
+
+	cudaMemcpy(h_ref, d_out, byte_size, cudaMemcpyDeviceToHost);
+
+	host_const_calculation(h_in, h_out, size);
+
+	compare_arrays(h_ref, h_out, size);
+
+	cudaFree(d_out);
+	cudaFree(d_in);
+	free(h_ref);
+	free(h_out);
+	free(h_in);
+
+	return 0;
+}

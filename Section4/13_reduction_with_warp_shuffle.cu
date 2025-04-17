@@ -109,83 +109,83 @@ __global__ void reduction_smem_warp_shfl(int * input, int * temp, int size)
 }
 
 
-//int main(int argc, char ** argv)
-//{
-//	printf("Running parallel reduction with complete unrolling kernel \n");
-//
-//	int kernel_index = 0;
-//
-//	if (argc > 1)
-//	{
-//		kernel_index = 1;
-//	}
-//
-//	int size = 1 << 25;
-//	int byte_size = size * sizeof(int);
-//	int block_size = BLOCK_SIZE;
-//
-//	int * h_input, *h_ref;
-//	h_input = (int*)malloc(byte_size);
-//
-//	initialize(h_input, size);
-//
-//	int cpu_result = reduction_cpu(h_input, size);
-//
-//	dim3 block(block_size);
-//	dim3 grid((size / block_size));
-//
-//	printf("Kernel launch parameters || grid : %d, block : %d \n", grid.x, block.x);
-//
-//	int temp_array_byte_size = sizeof(int)* grid.x;
-//
-//	h_ref = (int*)malloc(temp_array_byte_size);
-//
-//	int * d_input, *d_temp;
-//
-//	printf(" \nreduction with shared memory\n ");
-//	gpuErrchk(cudaMalloc((void**)&d_input, byte_size));
-//	gpuErrchk(cudaMalloc((void**)&d_temp, temp_array_byte_size));
-//
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,cudaMemcpyHostToDevice));
-//	
-//	reduction_smem_benchmark <1024> << < grid, block >> > (d_input, d_temp, size);
-//
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//	int gpu_result = 0;
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//
-//	compare_results(gpu_result, cpu_result);
-//
-//	//warp shuffle implementation
-//	printf(" \nreduction with warp shuffle instructions \n ");
-//	
-//	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
-//	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size, cudaMemcpyHostToDevice));
-//
-//	reduction_smem_warp_shfl <1024> << < grid, block >> > (d_input, d_temp, size);
-//
-//	gpuErrchk(cudaDeviceSynchronize());
-//	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
-//
-//	gpu_result = 0;
-//	for (int i = 0; i < grid.x; i++)
-//	{
-//		gpu_result += h_ref[i];
-//	}
-//
-//	compare_results(gpu_result, cpu_result);
-//
-//	gpuErrchk(cudaFree(d_input));
-//	gpuErrchk(cudaFree(d_temp));
-//	free(h_input);
-//	free(h_ref);
-//
-//	gpuErrchk(cudaDeviceReset());
-//	return 0;
-//}
+int main(int argc, char ** argv)
+{
+	printf("Running parallel reduction with complete unrolling kernel \n");
+
+	int kernel_index = 0;
+
+	if (argc > 1)
+	{
+		kernel_index = 1;
+	}
+
+	int size = 1 << 25;
+	int byte_size = size * sizeof(int);
+	int block_size = BLOCK_SIZE;
+
+	int * h_input, *h_ref;
+	h_input = (int*)malloc(byte_size);
+
+	initialize(h_input, size);
+
+	int cpu_result = reduction_cpu(h_input, size);
+
+	dim3 block(block_size);
+	dim3 grid((size / block_size));
+
+	printf("Kernel launch parameters || grid : %d, block : %d \n", grid.x, block.x);
+
+	int temp_array_byte_size = sizeof(int)* grid.x;
+
+	h_ref = (int*)malloc(temp_array_byte_size);
+
+	int * d_input, *d_temp;
+
+	printf(" \nreduction with shared memory\n ");
+	gpuErrchk(cudaMalloc((void**)&d_input, byte_size));
+	gpuErrchk(cudaMalloc((void**)&d_temp, temp_array_byte_size));
+
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size,cudaMemcpyHostToDevice));
+	
+	reduction_smem_benchmark <1024> << < grid, block >> > (d_input, d_temp, size);
+
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+	int gpu_result = 0;
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+
+	compare_results(gpu_result, cpu_result);
+
+	//warp shuffle implementation
+	printf(" \nreduction with warp shuffle instructions \n ");
+	
+	gpuErrchk(cudaMemset(d_temp, 0, temp_array_byte_size));
+	gpuErrchk(cudaMemcpy(d_input, h_input, byte_size, cudaMemcpyHostToDevice));
+
+	reduction_smem_warp_shfl <1024> << < grid, block >> > (d_input, d_temp, size);
+
+	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaMemcpy(h_ref, d_temp, temp_array_byte_size, cudaMemcpyDeviceToHost));
+
+	gpu_result = 0;
+	for (int i = 0; i < grid.x; i++)
+	{
+		gpu_result += h_ref[i];
+	}
+
+	compare_results(gpu_result, cpu_result);
+
+	gpuErrchk(cudaFree(d_input));
+	gpuErrchk(cudaFree(d_temp));
+	free(h_input);
+	free(h_ref);
+
+	gpuErrchk(cudaDeviceReset());
+	return 0;
+}
