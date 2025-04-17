@@ -15,6 +15,14 @@ all: $(EXECUTABLES)
 %.exe: %.cu $(COMMON_SRC)
 	$(NVCC) $(NVCC_FLAGS) -o $@ $^
 
+6_misaligned_read.exe: 6_misaligned_read.cu
+	# -Xptxas -dlcm=ca - These flags control the L1 cache behavior:
+	#	-Xptxas tells NVCC to pass the following options to the PTX assembler
+	# 	-dlcm=ca sets the L1 cache configuration:
+	# 	c stands for "cache" - enables L1 cache
+	# 	a stands for "all" - allows both loads and stores to use the L1 cache
+	$(NVCC) $(NVCC_FLAGS) -Xptxas -dlcm=ca -o $@ $^
+
 # Clean target
 clean:
 	rm -f $(EXECUTABLES)

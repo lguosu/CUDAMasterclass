@@ -61,7 +61,28 @@ int main(int argc, char** argv)
 	cudaMemcpy(d_a, h_a, byte_size, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_b, h_b, byte_size, cudaMemcpyHostToDevice);
 
+	// Create CUDA events for timing
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+
+	// Record start event
+	cudaEventRecord(start);
+
 	misaligned_read_test << <grid, block >> > (d_a, d_b, d_c, size, offset);
+
+	// Record stop event and wait for completion
+	cudaEventRecord(stop);
+	cudaEventSynchronize(stop);
+
+	// Calculate and print execution time
+	float milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, start, stop);
+	printf("Kernel execution time: %f ms\n", milliseconds);
+
+	// Clean up events
+	cudaEventDestroy(stop);
+	cudaEventDestroy(start);
 
 	cudaDeviceSynchronize();
 	cudaMemcpy(h_ref, d_c, byte_size, cudaMemcpyDeviceToHost);
