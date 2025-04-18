@@ -11,7 +11,7 @@
 
 #define BDIMX 64
 #define BDIMY 8
-#define IPAD 2
+#define IPAD 2 // for 64-bit bank width shared memory
 
 __global__ void transpose_read_raw_write_column_benchmark(int * mat, 
 	int* transpose, int nx, int ny)
@@ -161,6 +161,67 @@ __global__ void transpose_smem_pad_unrolling(int * in, int* out, int nx, int ny)
 	}
 }
 
+__global__ void transpose_smem_diagonal(int * in, int* out, int nx, int ny)
+{
+	__shared__ int tile[BDIMX][BDIMY];
+
+	//ix and iy calculation for input index
+	int ix = blockDim.x * blockIdx.x + threadIdx.x;
+	int iy = blockDim.y * blockIdx.y + threadIdx.y;
+
+	//input index
+	int in_index = iy * nx + ix;
+
+	//output array access in row major format
+	int out_index = ix * ny + iy;
+
+	if (ix < nx && iy < ny)
+	{
+		int diag_row = threadIdx.x;
+		int diag_col = (threadIdx.x + threadIdx.y) % blockDim.y;
+		tile[diag_row][diag_col] = in[in_index];
+
+		//wait untill all the threads load the values
+		__syncthreads();
+
+		out[out_index] = tile[diag_row][diag_col];
+	}
+}
+
+__global__ void transpose_smem_diagonal_unrolling(int * in, int* out, int nx, int ny)
+{
+	__shared__ int tile[2 * BDIMX][BDIMY];
+
+	//ix and iy calculation for input index
+	int ix = 2 * blockDim.x * blockIdx.x + threadIdx.x;
+	int iy = blockDim.y * blockIdx.y + threadIdx.y;
+
+	//input index
+	int in_index1 = iy * nx + ix;
+	int in_index2 = in_index1 + BDIMX;
+
+	//output array access in row major format
+	int out_index1 = ix * ny + iy;
+	int out_index2 = (ix + BDIMX) * ny + iy;
+
+	if (ix < nx && iy < ny)
+	{
+		int diag_row1 = threadIdx.x;
+		int diag_col1 = (threadIdx.x + threadIdx.y) % blockDim.y;
+		tile[diag_row1][diag_col1] = in[in_index1];
+
+		int diag_row2 = threadIdx.x + BDIMX;
+		int diag_col2 = (threadIdx.x + BDIMX + threadIdx.y) % blockDim.y;
+		tile[diag_row2][diag_col2] = in[in_index2];
+
+		//wait untill all the threads load the values
+		__syncthreads();
+
+		out[out_index1] = tile[diag_row1][diag_col1];
+		out[out_index2] = tile[diag_row2][diag_col2];
+	}
+}
+
 int main(int argc, char** argv)
 {
 	//default values for variabless
@@ -228,12 +289,30 @@ int main(int argc, char** argv)
 	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
 	compare_arrays(h_ref, h_trans_array, size);
 
+	dim3 unrolling_grid(grid.x/2, grid.y);
+	
 	printf("Launching smem padding and unrolling kernel \n");
 	cudaMemset(d_trans_array, 0, byte_size);
 
-	grid.x = grid.x / 2;
-	
-	transpose_smem_pad_unrolling << < grid, blocks >> > (d_mat_array, d_trans_array, nx, ny);
+	transpose_smem_pad_unrolling << < unrolling_grid, blocks >> > (d_mat_array, d_trans_array, nx, ny);
+	gpuErrchk(cudaDeviceSynchronize());
+
+	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
+	compare_arrays(h_ref, h_trans_array, size);
+
+	printf("Launching smem diagonal indexing kernel \n");
+	cudaMemset(d_trans_array, 0, byte_size);
+
+	transpose_smem_diagonal << < grid, blocks >> > (d_mat_array, d_trans_array, nx, ny);
+	gpuErrchk(cudaDeviceSynchronize());
+
+	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
+	compare_arrays(h_ref, h_trans_array, size);
+
+	printf("Launching smem diagonal indexing and unrolling kernel \n");
+	cudaMemset(d_trans_array, 0, byte_size);
+
+	transpose_smem_diagonal_unrolling << < grid, blocks >> > (d_mat_array, d_trans_array, nx, ny);
 	gpuErrchk(cudaDeviceSynchronize());
 
 	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
