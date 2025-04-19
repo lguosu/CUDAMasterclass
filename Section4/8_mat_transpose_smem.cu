@@ -265,58 +265,49 @@ int main(int argc, char** argv)
 
 	dim3 blocks(block_x, block_y);
 	dim3 grid(nx/block_x, ny/block_y);
-
-	printf("Launching smem kernel \n");
-	transpose_smem <<< grid, blocks>> > (d_mat_array,d_trans_array,nx, ny);
-	gpuErrchk(cudaDeviceSynchronize());
-
-	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
-	compare_arrays(h_ref, h_trans_array,size);
-
-	printf("Launching benchmark kernel \n");
-	cudaMemset(d_trans_array,0, byte_size);
-	transpose_read_raw_write_column_benchmark << < grid, blocks >> > (d_mat_array, d_trans_array, nx, ny);
-	gpuErrchk(cudaDeviceSynchronize());
-
-	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
-	compare_arrays(h_ref, h_trans_array, size);
-
-	printf("Launching smem padding kernel \n");
-	cudaMemset(d_trans_array, 0, byte_size);
-	transpose_smem_pad << < grid, blocks >> > (d_mat_array, d_trans_array, nx, ny);
-	gpuErrchk(cudaDeviceSynchronize());
-
-	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
-	compare_arrays(h_ref, h_trans_array, size);
-
 	dim3 unrolling_grid(grid.x/2, grid.y);
-	
-	printf("Launching smem padding and unrolling kernel \n");
-	cudaMemset(d_trans_array, 0, byte_size);
 
-	transpose_smem_pad_unrolling << < unrolling_grid, blocks >> > (d_mat_array, d_trans_array, nx, ny);
-	gpuErrchk(cudaDeviceSynchronize());
+	// Create a lambda that captures the common parameters
+	auto execute_kernel = [=](const char* kernel_name, auto kernel, dim3 grid, dim3 blocks) {
+		printf("Launching %s kernel\n", kernel_name);
+		
+		// Create CUDA events for timing
+		cudaEvent_t start, stop;
+		cudaEventCreate(&start);
+		cudaEventCreate(&stop);
+		
+		cudaMemset(d_trans_array, 0, byte_size);
+		
+		// Record start event
+		cudaEventRecord(start);
+		
+		kernel<<<grid, blocks>>>(d_mat_array, d_trans_array, nx, ny);
+		gpuErrchk(cudaDeviceSynchronize());
+		
+		// Record stop event
+		cudaEventRecord(stop);
+		cudaEventSynchronize(stop);
+		
+		// Calculate elapsed time
+		float milliseconds = 0;
+		cudaEventElapsedTime(&milliseconds, start, stop);
+		printf("Kernel execution time: %f ms\n", milliseconds);
+		
+		// Clean up events
+		cudaEventDestroy(start);
+		cudaEventDestroy(stop);
+		
+		gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
+		compare_arrays(h_ref, h_trans_array, size);
+	};
 
-	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
-	compare_arrays(h_ref, h_trans_array, size);
-
-	printf("Launching smem diagonal indexing kernel \n");
-	cudaMemset(d_trans_array, 0, byte_size);
-
-	transpose_smem_diagonal << < grid, blocks >> > (d_mat_array, d_trans_array, nx, ny);
-	gpuErrchk(cudaDeviceSynchronize());
-
-	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
-	compare_arrays(h_ref, h_trans_array, size);
-
-	printf("Launching smem diagonal indexing and unrolling kernel \n");
-	cudaMemset(d_trans_array, 0, byte_size);
-
-	transpose_smem_diagonal_unrolling << < grid, blocks >> > (d_mat_array, d_trans_array, nx, ny);
-	gpuErrchk(cudaDeviceSynchronize());
-
-	gpuErrchk(cudaMemcpy(h_ref, d_trans_array, byte_size, cudaMemcpyDeviceToHost));
-	compare_arrays(h_ref, h_trans_array, size);
+	// Execute each kernel using the lambda
+	execute_kernel("smem", transpose_smem, grid, blocks);
+	execute_kernel("benchmark", transpose_read_raw_write_column_benchmark, grid, blocks);
+	execute_kernel("smem padding", transpose_smem_pad, grid, blocks);
+	execute_kernel("smem padding and unrolling", transpose_smem_pad_unrolling, unrolling_grid, blocks);
+	execute_kernel("smem diagonal indexing", transpose_smem_diagonal, grid, blocks);
+	execute_kernel("smem diagonal indexing and unrolling", transpose_smem_diagonal_unrolling, unrolling_grid, blocks);
 
 	cudaFree(d_trans_array);
 	cudaFree(d_mat_array);
