@@ -155,89 +155,89 @@ static void run_double_test(size_t N, int niters, int blocksPerGrid,int threadsP
 	free(h_doubleOutputs);
 }
 
-//int main(int argc, char **argv)
-//{
-//	int i;
-//	double meanFloatToDeviceTime, meanFloatKernelTime, meanFloatFromDeviceTime;
-//	double meanDoubleToDeviceTime, meanDoubleKernelTime,
-//		meanDoubleFromDeviceTime;
-//	struct cudaDeviceProp deviceProperties;
-//	size_t totalMem, freeMem;
-//	float *floatSample;
-//	double *doubleSample;
-//	int sampleLength = 10;
-//	int nRuns = 5;
-//	int nKernelIters = 20;
-//
-//	meanFloatToDeviceTime = meanFloatKernelTime = meanFloatFromDeviceTime = 0.0;
-//	meanDoubleToDeviceTime = meanDoubleKernelTime =
-//		meanDoubleFromDeviceTime = 0.0;
-//
-//	gpuErrchk(cudaMemGetInfo(&freeMem, &totalMem));
-//	gpuErrchk(cudaGetDeviceProperties(&deviceProperties, 0));
-//
-//	size_t N = (freeMem * 0.9 / 2) / sizeof(double);
-//	int threadsPerBlock = 256;
-//	int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
-//
-//	if (blocksPerGrid > deviceProperties.maxGridSize[0])
-//	{
-//		blocksPerGrid = deviceProperties.maxGridSize[0];
-//	}
-//
-//	printf("Running %d blocks with %d threads/block over %lu elements\n",
-//		blocksPerGrid, threadsPerBlock, N);
-//
-//	floatSample = (float *)malloc(sizeof(float) * sampleLength);
-//	doubleSample = (double *)malloc(sizeof(double) * sampleLength);
-//
-//	for (i = 0; i < nRuns; i++)
-//	{
-//		long toDeviceTime, kernelTime, fromDeviceTime;
-//
-//		run_float_test(N, nKernelIters, blocksPerGrid, threadsPerBlock,
-//			&toDeviceTime, &kernelTime, &fromDeviceTime,
-//			floatSample, sampleLength);
-//		meanFloatToDeviceTime += toDeviceTime;
-//		meanFloatKernelTime += kernelTime;
-//		meanFloatFromDeviceTime += fromDeviceTime;
-//
-//		run_double_test(N, nKernelIters, blocksPerGrid, threadsPerBlock,
-//			&toDeviceTime, &kernelTime, &fromDeviceTime,
-//			doubleSample, sampleLength);
-//		meanDoubleToDeviceTime += toDeviceTime;
-//		meanDoubleKernelTime += kernelTime;
-//		meanDoubleFromDeviceTime += fromDeviceTime;
-//	}
-//
-//	meanFloatToDeviceTime /= nRuns;
-//	meanFloatKernelTime /= nRuns;
-//	meanFloatFromDeviceTime /= nRuns;
-//	meanDoubleToDeviceTime /= nRuns;
-//	meanDoubleKernelTime /= nRuns;
-//	meanDoubleFromDeviceTime /= nRuns;
-//
-//	meanFloatToDeviceTime /= CLOCKS_PER_SEC;
-//	meanFloatKernelTime /= CLOCKS_PER_SEC;
-//	meanFloatFromDeviceTime /= CLOCKS_PER_SEC;
-//	meanDoubleToDeviceTime /= CLOCKS_PER_SEC;
-//	meanDoubleKernelTime /= CLOCKS_PER_SEC;
-//	meanDoubleFromDeviceTime /= CLOCKS_PER_SEC;
-//
-//	printf("For single-precision floating point, mean times for:\n");
-//	printf("  Copy to device:   %f s\n", meanFloatToDeviceTime);
-//	printf("  Kernel execution: %f s\n", meanFloatKernelTime);
-//	printf("  Copy from device: %f s\n", meanFloatFromDeviceTime);
-//	printf("For double-precision floating point, mean times for:\n");
-//	printf("  Copy to device:   %f s (%.2fx slower than single-precision)\n",
-//		meanDoubleToDeviceTime,
-//		meanDoubleToDeviceTime / meanFloatToDeviceTime);
-//	printf("  Kernel execution: %f s (%.2fx slower than single-precision)\n",
-//		meanDoubleKernelTime,
-//		meanDoubleKernelTime / meanFloatKernelTime);
-//	printf("  Copy from device: %f s (%.2fx slower than single-precision)\n",
-//		meanDoubleFromDeviceTime,
-//		meanDoubleFromDeviceTime / meanFloatFromDeviceTime);
-//
-//	return 0;
-//}
+int main(int argc, char **argv)
+{
+	int i;
+	double meanFloatToDeviceTime, meanFloatKernelTime, meanFloatFromDeviceTime;
+	double meanDoubleToDeviceTime, meanDoubleKernelTime,
+		meanDoubleFromDeviceTime;
+	struct cudaDeviceProp deviceProperties;
+	size_t totalMem, freeMem;
+	float *floatSample;
+	double *doubleSample;
+	int sampleLength = 10;
+	int nRuns = 5;
+	int nKernelIters = 20;
+
+	meanFloatToDeviceTime = meanFloatKernelTime = meanFloatFromDeviceTime = 0.0;
+	meanDoubleToDeviceTime = meanDoubleKernelTime =
+		meanDoubleFromDeviceTime = 0.0;
+
+	gpuErrchk(cudaMemGetInfo(&freeMem, &totalMem));
+	gpuErrchk(cudaGetDeviceProperties(&deviceProperties, 0));
+
+	size_t N = (freeMem * 0.9 / 2) / sizeof(double);
+	int threadsPerBlock = 256;
+	int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
+
+	if (blocksPerGrid > deviceProperties.maxGridSize[0])
+	{
+		blocksPerGrid = deviceProperties.maxGridSize[0];
+	}
+
+	printf("Running %d blocks with %d threads/block over %lu elements\n",
+		blocksPerGrid, threadsPerBlock, N);
+
+	floatSample = (float *)malloc(sizeof(float) * sampleLength);
+	doubleSample = (double *)malloc(sizeof(double) * sampleLength);
+
+	for (i = 0; i < nRuns; i++)
+	{
+		long toDeviceTime, kernelTime, fromDeviceTime;
+
+		run_float_test(N, nKernelIters, blocksPerGrid, threadsPerBlock,
+			&toDeviceTime, &kernelTime, &fromDeviceTime,
+			floatSample, sampleLength);
+		meanFloatToDeviceTime += toDeviceTime;
+		meanFloatKernelTime += kernelTime;
+		meanFloatFromDeviceTime += fromDeviceTime;
+
+		run_double_test(N, nKernelIters, blocksPerGrid, threadsPerBlock,
+			&toDeviceTime, &kernelTime, &fromDeviceTime,
+			doubleSample, sampleLength);
+		meanDoubleToDeviceTime += toDeviceTime;
+		meanDoubleKernelTime += kernelTime;
+		meanDoubleFromDeviceTime += fromDeviceTime;
+	}
+
+	meanFloatToDeviceTime /= nRuns;
+	meanFloatKernelTime /= nRuns;
+	meanFloatFromDeviceTime /= nRuns;
+	meanDoubleToDeviceTime /= nRuns;
+	meanDoubleKernelTime /= nRuns;
+	meanDoubleFromDeviceTime /= nRuns;
+
+	meanFloatToDeviceTime /= CLOCKS_PER_SEC;
+	meanFloatKernelTime /= CLOCKS_PER_SEC;
+	meanFloatFromDeviceTime /= CLOCKS_PER_SEC;
+	meanDoubleToDeviceTime /= CLOCKS_PER_SEC;
+	meanDoubleKernelTime /= CLOCKS_PER_SEC;
+	meanDoubleFromDeviceTime /= CLOCKS_PER_SEC;
+
+	printf("For single-precision floating point, mean times for:\n");
+	printf("  Copy to device:   %f s\n", meanFloatToDeviceTime);
+	printf("  Kernel execution: %f s\n", meanFloatKernelTime);
+	printf("  Copy from device: %f s\n", meanFloatFromDeviceTime);
+	printf("For double-precision floating point, mean times for:\n");
+	printf("  Copy to device:   %f s (%.2fx slower than single-precision)\n",
+		meanDoubleToDeviceTime,
+		meanDoubleToDeviceTime / meanFloatToDeviceTime);
+	printf("  Kernel execution: %f s (%.2fx slower than single-precision)\n",
+		meanDoubleKernelTime,
+		meanDoubleKernelTime / meanFloatKernelTime);
+	printf("  Copy from device: %f s (%.2fx slower than single-precision)\n",
+		meanDoubleFromDeviceTime,
+		meanDoubleFromDeviceTime / meanFloatFromDeviceTime);
+
+	return 0;
+}
