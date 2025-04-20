@@ -32,58 +32,8 @@ __global__ void lots_of_compute(T *inputs, int N, size_t niters, T *outputs)
     }
 }
 
-// Template function for running tests
-template<typename T>
-static void run_test(size_t N, int niters, int blocksPerGrid, int threadsPerBlock,
-    long* to_device_clock_cyl, long* kernel_clock_cyl, long* from_device_clock_cyl,
-    T* sample, int sampleLength)
-{
-    int i;
-    T *h_inputs, *h_outputs;
-    T *d_inputs, *d_outputs;
-
-    h_inputs = (T*)malloc(sizeof(T) * N);
-    h_outputs = (T*)malloc(sizeof(T) * N);
-    gpuErrchk(cudaMalloc((void**)&d_inputs, sizeof(T) * N));
-    gpuErrchk(cudaMalloc((void**)&d_outputs, sizeof(T) * N));
-
-    for (i = 0; i < N; i++)
-    {
-        h_inputs[i] = (T)i;
-    }
-
-    clock_t ops_start, ops_end;
-
-    ops_start = clock();
-    gpuErrchk(cudaMemcpy(d_inputs, h_inputs, sizeof(T) * N, cudaMemcpyHostToDevice));
-    ops_end = clock();
-    *to_device_clock_cyl = ops_end - ops_start;
-
-    ops_start = clock();
-    lots_of_compute<T><<<blocksPerGrid, threadsPerBlock>>>(d_inputs, N, niters, d_outputs);
-    gpuErrchk(cudaDeviceSynchronize());
-    ops_end = clock();
-    *kernel_clock_cyl = ops_end - ops_start;
-
-    ops_start = clock();
-    gpuErrchk(cudaMemcpy(h_outputs, d_outputs, sizeof(T) * N, cudaMemcpyDeviceToHost));
-    ops_end = clock();
-    *from_device_clock_cyl = ops_end - ops_start;
-
-    for (i = 0; i < sampleLength; i++)
-    {
-        sample[i] = h_outputs[i];
-    }
-
-    gpuErrchk(cudaFree(d_inputs));
-    gpuErrchk(cudaFree(d_outputs));
-    free(h_inputs);
-    free(h_outputs);
-}
-
 int main(int argc, char **argv)
 {
-    int i;
     double meanFloatToDeviceTime, meanFloatKernelTime, meanFloatFromDeviceTime;
     double meanDoubleToDeviceTime, meanDoubleKernelTime,
         meanDoubleFromDeviceTime;
@@ -94,10 +44,6 @@ int main(int argc, char **argv)
     int sampleLength = 10;
     int nRuns = 5;
     int nKernelIters = 20;
-
-    meanFloatToDeviceTime = meanFloatKernelTime = meanFloatFromDeviceTime = 0.0;
-    meanDoubleToDeviceTime = meanDoubleKernelTime =
-        meanDoubleFromDeviceTime = 0.0;
 
     gpuErrchk(cudaMemGetInfo(&freeMem, &totalMem));
     gpuErrchk(cudaGetDeviceProperties(&deviceProperties, 0));
@@ -117,38 +63,72 @@ int main(int argc, char **argv)
     floatSample = (float *)malloc(sizeof(float) * sampleLength);
     doubleSample = (double *)malloc(sizeof(double) * sampleLength);
 
-    for (i = 0; i < nRuns; i++)
+    // Define run_test as a templated lambda with mean calculations included
+    auto run_test = [=]<typename T>(T* sample, double& meanToDeviceTime, 
+                                   double& meanKernelTime, double& meanFromDeviceTime)
     {
-        long toDeviceTime, kernelTime, fromDeviceTime;
+        meanToDeviceTime = meanKernelTime = meanFromDeviceTime = 0.0;
 
-        run_test<float>(N, nKernelIters, blocksPerGrid, threadsPerBlock,
-            &toDeviceTime, &kernelTime, &fromDeviceTime,
-            floatSample, sampleLength);
-        meanFloatToDeviceTime += toDeviceTime;
-        meanFloatKernelTime += kernelTime;
-        meanFloatFromDeviceTime += fromDeviceTime;
+        for (int run = 0; run < nRuns; run++)
+        {
+            T *h_inputs, *h_outputs;
+            T *d_inputs, *d_outputs;
+            long toDeviceTime, kernelTime, fromDeviceTime;
+            clock_t ops_start, ops_end;
 
-        run_test<double>(N, nKernelIters, blocksPerGrid, threadsPerBlock,
-            &toDeviceTime, &kernelTime, &fromDeviceTime,
-            doubleSample, sampleLength);
-        meanDoubleToDeviceTime += toDeviceTime;
-        meanDoubleKernelTime += kernelTime;
-        meanDoubleFromDeviceTime += fromDeviceTime;
-    }
+            h_inputs = (T*)malloc(sizeof(T) * N);
+            h_outputs = (T*)malloc(sizeof(T) * N);
+            gpuErrchk(cudaMalloc((void**)&d_inputs, sizeof(T) * N));
+            gpuErrchk(cudaMalloc((void**)&d_outputs, sizeof(T) * N));
 
-    meanFloatToDeviceTime /= nRuns;
-    meanFloatKernelTime /= nRuns;
-    meanFloatFromDeviceTime /= nRuns;
-    meanDoubleToDeviceTime /= nRuns;
-    meanDoubleKernelTime /= nRuns;
-    meanDoubleFromDeviceTime /= nRuns;
+            for (int i = 0; i < N; i++)
+            {
+                h_inputs[i] = (T)i;
+            }
 
-    meanFloatToDeviceTime /= CLOCKS_PER_SEC;
-    meanFloatKernelTime /= CLOCKS_PER_SEC;
-    meanFloatFromDeviceTime /= CLOCKS_PER_SEC;
-    meanDoubleToDeviceTime /= CLOCKS_PER_SEC;
-    meanDoubleKernelTime /= CLOCKS_PER_SEC;
-    meanDoubleFromDeviceTime /= CLOCKS_PER_SEC;
+            ops_start = clock();
+            gpuErrchk(cudaMemcpy(d_inputs, h_inputs, sizeof(T) * N, cudaMemcpyHostToDevice));
+            ops_end = clock();
+            toDeviceTime = ops_end - ops_start;
+
+            ops_start = clock();
+            lots_of_compute<T><<<blocksPerGrid, threadsPerBlock>>>(d_inputs, N, nKernelIters, d_outputs);
+            gpuErrchk(cudaDeviceSynchronize());
+            ops_end = clock();
+            kernelTime = ops_end - ops_start;
+
+            ops_start = clock();
+            gpuErrchk(cudaMemcpy(h_outputs, d_outputs, sizeof(T) * N, cudaMemcpyDeviceToHost));
+            ops_end = clock();
+            fromDeviceTime = ops_end - ops_start;
+
+            for (int i = 0; i < sampleLength; i++)
+            {
+                sample[i] = h_outputs[i];
+            }
+
+            meanToDeviceTime += toDeviceTime;
+            meanKernelTime += kernelTime;
+            meanFromDeviceTime += fromDeviceTime;
+
+            gpuErrchk(cudaFree(d_inputs));
+            gpuErrchk(cudaFree(d_outputs));
+            free(h_inputs);
+            free(h_outputs);
+        }
+
+        // Calculate means inside the lambda
+        meanToDeviceTime /= (nRuns * CLOCKS_PER_SEC);
+        meanKernelTime /= (nRuns * CLOCKS_PER_SEC);
+        meanFromDeviceTime /= (nRuns * CLOCKS_PER_SEC);
+    };
+
+    // Run benchmarks using the lambda
+    run_test.template operator()<float>(floatSample, 
+        meanFloatToDeviceTime, meanFloatKernelTime, meanFloatFromDeviceTime);
+    
+    run_test.template operator()<double>(doubleSample,
+        meanDoubleToDeviceTime, meanDoubleKernelTime, meanDoubleFromDeviceTime);
 
     printf("For single-precision floating point, mean times for:\n");
     printf("  Copy to device:   %f s\n", meanFloatToDeviceTime);

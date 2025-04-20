@@ -1,6 +1,6 @@
 # Compiler settings
 NVCC = nvcc
-NVCC_FLAGS = -I../common
+NVCC_FLAGS = --std=c++20 -I../common
 COMMON_SRC = ../common/common.cpp
 
 # Find all CUDA source files
