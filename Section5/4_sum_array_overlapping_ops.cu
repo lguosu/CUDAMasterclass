@@ -79,12 +79,12 @@ int main()
 		cudaMemcpyAsync(&gpu_result[offset], &d_c[offset], BYTES_PER_STREAM, cudaMemcpyDeviceToHost,streams[i]);
 	}
 	
+	cudaDeviceSynchronize();
+
 	for (int i = 0; i < NUM_STREAMS; i++)
 	{
 		cudaStreamDestroy(streams[i]);
 	}
-
-	cudaDeviceSynchronize();
 
 	//validity check
 	compare_arrays(cpu_result, gpu_result, size);
