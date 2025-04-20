@@ -97,56 +97,56 @@ void mergesort_gpu(int * arr, int l, int r)
 	cudaMemcpy(arr,gpu_input,BYTE_SIZE,cudaMemcpyDeviceToHost);
 }
 
-//// args 1 : size of the input
-//int main(int argc, char** argv)
-//{
-//	int size = 1 << 8;
-//	int SIZE_OF_ELEMENT = sizeof(int);
-//	int BYTE_SIZE = size * SIZE_OF_ELEMENT;
-//	clock_t cpu_start, cpu_end, gpu_start, gpu_end;
-//
-//	if (argc > 1)
-//	{
-//		size = 1 << atoi(argv[1]);
-//	}
-//
-//	int * input, *cpu_input; 
-//	input = (int*)malloc(BYTE_SIZE);
-//	cpu_input = (int*)malloc(BYTE_SIZE);
-//
-//	if (!input)
-//	{
-//		printf("Error allocating memory for input array \n");
-//	}
-//
-//	if (!cpu_input)
-//	{
-//		printf("Error allocating memory for cpu input array \n");
-//	}
-//
-//	initialize(input, size, INIT_ONE_TO_TEN);
-//
-//	for (int i = 0; i < size; i++)
-//	{
-//		cpu_input[i] = input[i];
-//	}
-//
-//	cpu_start = clock();
-//	mergesort_cpu(cpu_input, 0, size -1);
-//	cpu_end = clock();
-//
-//	gpu_start = clock();
-//	mergesort_gpu(input, 0, size - 1);
-//	gpu_end = clock();
-//
-//	compare_arrays(cpu_input, input,size);
-//
-//	//print_array(cpu_input, size);
-//
-//	free(cpu_input);
-//	free(input);
-//
-//	cudaDeviceReset();
-//
-//	return 0;
-//}
+// args 1 : size of the input
+int main(int argc, char** argv)
+{
+	int size = 1 << 8;
+	int SIZE_OF_ELEMENT = sizeof(int);
+	int BYTE_SIZE = size * SIZE_OF_ELEMENT;
+	clock_t cpu_start, cpu_end, gpu_start, gpu_end;
+
+	if (argc > 1)
+	{
+		size = 1 << atoi(argv[1]);
+	}
+
+	int * input, *cpu_input; 
+	input = (int*)malloc(BYTE_SIZE);
+	cpu_input = (int*)malloc(BYTE_SIZE);
+
+	if (!input)
+	{
+		printf("Error allocating memory for input array \n");
+	}
+
+	if (!cpu_input)
+	{
+		printf("Error allocating memory for cpu input array \n");
+	}
+
+	initialize(input, size, INIT_ONE_TO_TEN);
+
+	for (int i = 0; i < size; i++)
+	{
+		cpu_input[i] = input[i];
+	}
+
+	cpu_start = clock();
+	mergesort_cpu(cpu_input, 0, size -1);
+	cpu_end = clock();
+
+	gpu_start = clock();
+	mergesort_gpu(input, 0, size - 1);
+	gpu_end = clock();
+
+	compare_arrays(cpu_input, input,size);
+
+	//print_array(cpu_input, size);
+
+	free(cpu_input);
+	free(input);
+
+	cudaDeviceReset();
+
+	return 0;
+}

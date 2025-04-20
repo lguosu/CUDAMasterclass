@@ -729,7 +729,7 @@ void convolution_2d(int argc, char** argv)
 	cudaDeviceReset();
 }
 
-//int main(int argc, char** argv)
-//{
-//	convolution_2d(argc, argv);
-//}
+int main(int argc, char** argv)
+{
+	convolution_2d(argc, argv);
+}
